@@ -16,4 +16,4 @@ file=$1
 # exit if `bc` was not found
 which bc >/dev/null || exit_with_message 'bc not found'
 
-grep '^[0-9]\+' $file | paste -sd+ - | bc
+grep '^[0-9-]\+' $file | paste -sd+ - | bc
