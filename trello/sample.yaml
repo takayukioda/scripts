@@ -1,0 +1,5 @@
+model:
+  action:
+    - key: /some/path/like/key
+      type: page
+      url: https://example.com
