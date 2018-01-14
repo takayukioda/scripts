@@ -1,5 +1,13 @@
 model:
   action:
-    - key: /some/path/like/key
+    - key: /some/path/like/key/for/organization
       type: page
       url: https://example.com
+      for: organization
+    - key: /some/path/like/key/type/modal
+      type: modal
+      url: https://example.com
+    - key: /some/path/like/key/for/applicant
+      type: page
+      url: https://example.com
+      for: applicant

@@ -26,8 +26,12 @@ require 'yaml'
 LABELS = {
   'status: complete' => 'green',
   'status: draft' => 'yellow',
+  'fix: additional' => 'orange',
+  'fix: issue' => 'red',
   'type: modal' => 'purple',
   'type: page' => 'blue',
+  'for: organization' => 'sky',
+  'for: applicant' => 'lime',
 }
 
 # Deal with arguments
@@ -115,8 +119,10 @@ def setup(yaml_file, username, board_name)
             list_id: list.id,
             })
           card.add_attachment(page['url'])
-          label = labels.select{ |l| l.name == "type: #{page['type']}" }.first
-          card.add_label(label) if !label.nil?
+          type_label = labels.select{ |l| l.name == "type: #{page['type']}" }.first
+          card.add_label(type_label) if !type_label.nil?
+          for_label = labels.select{ |l| l.name == "for: #{page['for']}" }.first
+          card.add_label(for_label) if !for_label.nil?
         end
       end
     end
