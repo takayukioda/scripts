@@ -1,0 +1,12 @@
+{
+  "name": "github-issues",
+  "version": "1.0.0",
+  "description": "create github issues based on yaml file",
+  "main": "main.js",
+  "author": "takayukioda",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^16.28.7",
+    "js-yaml": "^3.13.1"
+  }
+}
