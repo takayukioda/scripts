@@ -29,6 +29,7 @@ const msleep = (msec) => {
         repo: issue.repo || 'scripts',
         title: issue.title,
         body: issue.body,
+        labels: (issue.labels && issue.labels.length > 0) ? issue.labels : undefined,
       });
     } catch (err) {
       console.log(`Failed to create issue: ${issue.title}`);
