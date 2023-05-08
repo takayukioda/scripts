@@ -12,6 +12,24 @@ if (!Deno.env.has("GITHUB_REPO")) {
   throw new Error("Please set GITHUB_REPO");
 }
 
+interface PageInfo {
+  hasNextPage: boolean;
+  endCursor: string;
+}
+interface Release {
+  tagName: string;
+  name: string;
+  createdAt: Date;
+  tagCommit: {
+    abbreviatedOid: string;
+    oid: string;
+    addtions: number;
+    deletions: number;
+  }
+  author: {
+    name: string;
+  }
+}
 
 const Octokit = OctokitCore.plugin(restEndpointMethods);
 const octokit = new Octokit({
@@ -20,63 +38,88 @@ const octokit = new Octokit({
   timeZone: "Asia/Tokyo",
 });
 
-const listAllReleases = async (owner: string, repo: string) => {
-  const releases: Awaited<ReturnType<typeof octokit.rest.repos.listReleases>>[] = [];
-
-  let page = 1;
-  while (true) {
-    const resp = await octokit.rest.repos.listReleases({
-      owner,
-      repo,
-      per_page: 100,
-      page,
-      sort: "created",
-      direction: "desc",
-    });
-    releases.push(resp);
-
-    if (resp.headers.link?.match(/rel="next"/)) {
-      page++;
-    } else {
-      break;
+const listReleases  = async (owner: string, repo: string, size = 100, cursor?: string): Promise<{ pageInfo: PageInfo, releases: Release[] }> => {
+  const resp = await octokit.graphql<{ repository: { releases: { pageInfo: PageInfo, nodes: Release[] } } }>(`
+  query ($owner: String!, $repo: String!, $size: Int = 100, $cursor: String) {
+    repository(owner: $owner, name: $repo) {
+      releases(first: $size, after: $cursor) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          createdAt
+          tagName
+          name
+          tagCommit {
+            abbreviatedOid
+            oid
+            additions
+            deletions
+          }
+          author {
+            name
+          }
+        }
+      }
     }
-  }
-  return releases.map((r) => r.data).flat();
+  }`, {
+    owner,
+    repo,
+    size,
+    cursor,
+  });
+
+  const { pageInfo, nodes: releases } = resp.repository.releases;
+  return { pageInfo, releases };
 };
 
+const listAllReleases = async (aggregate: Release[], owner: string, repo: string,cursor?: string): Promise<Release[]> => {
+  console.log(aggregate.length);
+  const { pageInfo, releases } = await listReleases(owner, repo, 100, cursor);
+  const result = aggregate.concat(releases);
+  if (!pageInfo.hasNextPage) {
+    return result;
+  }
+
+  return await listAllReleases(result, owner, repo, pageInfo.endCursor);
+}
 
 const owner = Deno.env.get("GITHUB_OWNER")!;
 const repo = Deno.env.get("GITHUB_REPO")!;
-const all = await listAllReleases(owner, repo);
-const releases = all.filter((v) => v.created_at && v.tag_name.startsWith("prod-") && v.target_commitish === "master")
 
-console.log(["repo","tag_name","diff_days","created_at","publisher","name"].join("\t"));
+const all = await listAllReleases([], owner, repo);
+const releases = all.filter((v) => v.createdAt && v.tagName.startsWith("prod"))
+
+console.log(["repo","tag_name","tag_commit","diff_days","created_at","publisher","name"].join("\t"));
 releases
   .forEach((release, i) => {
     if (i + 1 >= releases.length) {
       const output = [
         repo,
-        release.tag_name,
+        release.tagName,
+        release.tagCommit.abbreviatedOid,
         0,
-        release.created_at,
-        release.author.login,
+        release.createdAt,
+        release.author.name,
         release.name,
       ]
       console.log(`${output.join("\t")}`);
       return;
     }
-    const createdAt = new Date(release.created_at!);
+    const createdAt = new Date(release.createdAt!);
 
     const previous = releases[i + 1];
-    const previouscreatedAt = new Date(previous.created_at!);
+    const previouscreatedAt = new Date(previous.createdAt!);
     const diff = difference(createdAt, previouscreatedAt, { units: ["days"] });
 
     const output = [
       repo,
-      release.tag_name,
+      release.tagName,
+      release.tagCommit.abbreviatedOid,
       diff.days,
-      release.created_at,
-      release.author.login,
+      release.createdAt,
+      release.author.name,
       release.name,
     ]
     console.log(`${output.join("\t")}`);
