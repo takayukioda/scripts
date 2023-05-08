@@ -1,5 +1,4 @@
-import { Octokit as OctokitCore } from 'https://cdn.skypack.dev/@octokit/core?dts';
-import { restEndpointMethods } from 'https://cdn.skypack.dev/@octokit/plugin-rest-endpoint-methods?dts';
+import { Octokit } from 'https://cdn.skypack.dev/@octokit/core?dts';
 import { difference } from "https://deno.land/std@0.185.0/datetime/difference.ts";
 
 if (!Deno.env.has("GITHUB_TOKEN")) {
@@ -31,7 +30,6 @@ interface Release {
   }
 }
 
-const Octokit = OctokitCore.plugin(restEndpointMethods);
 const octokit = new Octokit({
   userAgent: "Script via Deno",
   auth: Deno.env.get("GITHUB_TOKEN")!,
