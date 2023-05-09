@@ -73,7 +73,7 @@ const listReleases  = async (owner: string, repo: string, size = 100, cursor?: s
 };
 
 const listAllReleases = async (aggregate: Release[], owner: string, repo: string,cursor?: string): Promise<Release[]> => {
-  console.log(aggregate.length);
+  console.warn("aggregated", aggregate.length);
   const { pageInfo, releases } = await listReleases(owner, repo, 100, cursor);
   const result = aggregate.concat(releases);
   if (!pageInfo.hasNextPage) {
