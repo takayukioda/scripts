@@ -96,7 +96,7 @@ releases
       const output = [
         repo,
         release.tagName,
-        release.tagCommit.abbreviatedOid,
+      `"'${release.tagCommit.abbreviatedOid}"`,
         0,
         release.createdAt,
         release.author.name,
@@ -114,7 +114,7 @@ releases
     const output = [
       repo,
       release.tagName,
-      release.tagCommit.abbreviatedOid,
+      `"'${release.tagCommit.abbreviatedOid}"`,
       diff.days,
       release.createdAt,
       release.author.name,
