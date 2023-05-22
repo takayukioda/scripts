@@ -26,8 +26,14 @@ if (process.argv.length < 3) {
 }
 const code = process.argv[2];
 //const code = str2hex(process.argv[2]);
-console.log("Given:", process.argv[2]);
-console.log("Hex  :", code)
+console.log("Given:", code);
+try {
+console.log("s2h", str2hex(code));
 console.log("h2s/2:", hex2str(code, ASCII_LENGTH));
 console.log("h2s/4:", hex2str(code, UNICODE_LENGTH));
+console.log("h2s/6:", hex2str(code, 6));
+console.log("h2s/8:", hex2str(code, 8));
+} catch (e) {
+  console.error("Failed", e);
+}
 process.exit(0);
