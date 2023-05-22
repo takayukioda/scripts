@@ -19,6 +19,7 @@ interface Release {
   tagName: string;
   name: string;
   createdAt: Date;
+  url: string;
   tagCommit: {
     abbreviatedOid: string;
     oid: string;
@@ -49,6 +50,7 @@ const listReleases  = async (owner: string, repo: string, size = 100, cursor?: s
           createdAt
           tagName
           name
+          url
           tagCommit {
             abbreviatedOid
             oid
@@ -89,7 +91,7 @@ const repo = Deno.env.get("GITHUB_REPO")!;
 const all = await listAllReleases([], owner, repo);
 const releases = all.filter((v) => v.createdAt && v.tagName.startsWith("prod"))
 
-console.log(["repo","tag_name","tag_commit","diff_days","created_at","publisher","name"].join("\t"));
+console.log(["repo","tag_name","tag_commit","diff_days","created_at","publisher","name","url"].join("\t"));
 releases
   .forEach((release, i) => {
     if (i + 1 >= releases.length) {
@@ -101,6 +103,7 @@ releases
         release.createdAt,
         release.author.name,
         release.name,
+        release.url,
       ]
       console.log(`${output.join("\t")}`);
       return;
@@ -119,6 +122,7 @@ releases
       release.createdAt,
       release.author.name,
       release.name,
+      release.url,
     ]
     console.log(`${output.join("\t")}`);
   });
